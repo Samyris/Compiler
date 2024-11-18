@@ -1,4 +1,4 @@
-## Objetivo
+#Objetivo#
 O objetivo deste projeto é construir um compilador completo para uma dada linguagem de programação.
 
 ## Descrição Técnica
