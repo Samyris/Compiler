@@ -2,7 +2,7 @@ package lexical;
 
 public class Token {
     
-        public final int tag; // constante que representa o token
+        public final int tag; 
     
         public Token(int t) {
             tag = t;
