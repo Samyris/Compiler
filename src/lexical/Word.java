@@ -1,7 +1,5 @@
 package lexical;
 
-import javax.swing.text.html.HTML;
-
 public class Word extends Token {
     private String lexeme = "";
     public static final Word and = new Word ("&&", Tag.AND);
@@ -36,10 +34,10 @@ public class Word extends Token {
     public static final Word semicolon = new Word(";", Tag.SEMICOLON);
     public static final Word colon = new Word(";", Tag.COLON);
     public static final Word dot = new Word(".", Tag.DOT);
-    public static final Word opar = new Word("(", Tag.OPAR);
-    public static final Word cpar = new Word(")", Tag.CPAR);
-    public static final Word obra = new Word("{", Tag.OBRA);
-    public static final Word cbra = new Word("}", Tag.CBRA);
+    public static final Word opar = new Word("(", Tag.O_PAR);
+    public static final Word cpar = new Word(")", Tag.C_PAR);
+    public static final Word obra = new Word("{", Tag.O_BRACK);
+    public static final Word cbra = new Word("}", Tag.C_BRACK);
 
     public Word(String s, int tag) {
         super(tag);
