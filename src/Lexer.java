@@ -17,7 +17,7 @@ public class Lexer {
 
     /* Método para inserir palavras reservadas na HashTable */
     private void reserve(Word w) {
-        words.put(w.getLexeme(), w);
+        //words.put(w.getLexeme(), w);
     }
 
     public Lexer(String fileName) throws FileNotFoundException {
@@ -30,8 +30,8 @@ public class Lexer {
         //Insere palavras reservadas na HashTable
         reserve(new Word("if", Tag.IF));
         reserve(new Word("end", Tag.END));
-        reserve(new Word("type", Tag.TYPE));
-        reserve(new Word("int", Tag.INT));
+        //reserve(new Word("type", Tag.TYPE));
+        //reserve(new Word("int", Tag.INT));
         /*Lê o próximo caractere do arquivo*/
     }
 
