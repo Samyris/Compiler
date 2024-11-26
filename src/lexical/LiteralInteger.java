@@ -1,10 +1,10 @@
 package lexical;
 
-public class FloatNumber extends Token{
+public class LiteralInteger extends Token {
     public final int value;
 
-    public FloatNumber(int value) {
-        super(Tag.LIT_FLOAT);
+    public LiteralInteger(int value) {
+        super(Tag.LIT_INT);
         this.value = value;
     }
 

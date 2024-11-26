@@ -1,15 +1,14 @@
 package lexical;
 
-public class IntegerNumber extends Token {
+public class LiteralString extends Token{
     public final int value;
 
-    public IntegerNumber(int value) {
-        super(Tag.INT);
+    public LiteralString(int value) {
+        super(Tag.LIT_INT);
         this.value = value;
     }
 
     public String toString() {
         return "<" + value + ", " + tag + ">";
     }
-
 }

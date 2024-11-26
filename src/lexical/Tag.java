@@ -22,48 +22,48 @@ public class Tag {
 
         //Literais
         public final static int
-        LIT_INT = 999,
-        LIT_FLOAT = 34,
-        LIT_STRING =76;
+        LIT_INT = 269,
+        LIT_FLOAT = 270,
+        LIT_STRING =271;
 
         //Operadores Relacionais
         public final static int
-        AND = 270, // &&
-        OR = 271, // ||
-        NOT = 272; // !
+        AND = 272, // &&
+        OR = 273, // ||
+        NOT = 274; // !
 
         //Operadores de Comparação 
         public final static int
-        GT = 34, // Greater Than >
-        GE = 54, // Greater Than or Equal To >=
-        LT = 44, // Less Than <
-        LE = 33, // Less Than or Equal To <=
-        DIF = 22, // Different !=
-        EQ = 269; // equals ==
+        GT = 275, // Greater Than >
+        GE = 276, // Greater Than or Equal To >=
+        LT = 277, // Less Than <
+        LE = 278, // Less Than or Equal To <=
+        DIF = 279, // Different !=
+        EQ = 280; // equals ==
 
         // Operadores Aritnéticos
         public final static int
-        ADD = 79,
-        SUB = 94,
-        MUL = 45,
-        DIV = 34,
-        MODULE = 848; // %
+        ADD = 281,
+        SUB = 282,
+        MUL = 283,
+        DIV = 284,
+        MODULE = 285; // %
         
 
         //Pontuação
         public final static int
-        COMMA = 273, // ,
-        SEMICOLON = 274 , // ;
-        COLON = 275, // :
-        DOT = 276, // .
-        O_PAR = 277, // (
-        C_PAR = 278, // )
-        O_BRACK = 279, // [
-        C_BRACK = 280; // ]
+        COMMA = 289, // ,
+        SEMICOLON = 290 , // ;
+        COLON = 291, // :
+        DOT = 292, // .
+        O_PAR = 293, // (
+        C_PAR = 294, // )
+        O_BRACK = 295, // [
+        C_BRACK = 296; // ]
 
         // Identificador
         public final static int
-        ID = 278;
+        ID = 297;
 
         //Outros tokens
         public final static int
