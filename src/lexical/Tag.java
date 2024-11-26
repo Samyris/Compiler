@@ -24,7 +24,7 @@ public class Tag {
         public final static int
         LIT_INT = 269,
         LIT_FLOAT = 270,
-        LIT_STRING =271;
+        LIT_STRING = 271;
 
         //Operadores Relacionais
         public final static int
@@ -38,7 +38,7 @@ public class Tag {
         GE = 276, // Greater Than or Equal To >=
         LT = 277, // Less Than <
         LE = 278, // Less Than or Equal To <=
-        DIF = 279, // Different !=
+        DIF = 279, // Different <>
         EQ = 280; // equals ==
 
         // Operadores Aritnéticos
@@ -47,7 +47,8 @@ public class Tag {
         SUB = 282,
         MUL = 283,
         DIV = 284,
-        MODULE = 285; // %
+        MODULE = 285, // %
+        ASIGN = 298; // =
         
 
         //Pontuação
@@ -58,8 +59,8 @@ public class Tag {
         DOT = 292, // .
         O_PAR = 293, // (
         C_PAR = 294, // )
-        O_BRACK = 295, // [
-        C_BRACK = 296; // ]
+        O_BRACK = 295, // {
+        C_BRACK = 296; // }
 
         // Identificador
         public final static int
