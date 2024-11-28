@@ -4,8 +4,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Hashtable;
 import lexical.LiteralInteger;
-import lexical.LiteralFloat;
-import lexical.LiteralString;
 import lexical.Tag;
 import lexical.Token;
 import lexical.Word;
@@ -29,16 +27,49 @@ public class Lexer {
             System.out.println("Arquivo não encontrado");
             throw e;
         }
+
         //Insere palavras reservadas na HashTable
-        reserve(new Word("if", Tag.IF));
+        reserve(new Word("start", Tag.START));
+        reserve(new Word("exit", Tag.EXIT));
         reserve(new Word("end", Tag.END));
-        //reserve(new Word("type", Tag.TYPE));
-        //reserve(new Word("int", Tag.INT));
+        reserve(new Word("if", Tag.IF));
+        reserve(new Word("then", Tag.THEN));
+        reserve(new Word("else", Tag.ELSE));
+        reserve(new Word("do", Tag.DO));
+        reserve(new Word("while", Tag.WHILE));
+        reserve(new Word("scan", Tag.SCAN));
+        reserve(new Word("print", Tag.PRINT));
+        reserve(new Word("int", Tag.TYPE_INT));
+        reserve(new Word("float", Tag.TYPE_FLOAT));
+        reserve(new Word("string", Tag.TYPE_STRING));
+        reserve(new Word("&&", Tag.AND));
+        reserve(new Word("||", Tag.OR));
+        reserve(new Word("==", Tag.EQ));
+        reserve(new Word("!", Tag.NOT));
+        reserve(new Word(">", Tag.GT));
+        reserve(new Word(">=", Tag.GE));
+        reserve(new Word("<", Tag.LT));
+        reserve(new Word("<=", Tag.LE));
+        reserve(new Word("<>", Tag.DIF));
+        reserve(new Word("+", Tag.ADD));
+        reserve(new Word("-", Tag.SUB));
+        reserve(new Word("*", Tag.MUL));
+        reserve(new Word("/", Tag.DIV));
+        reserve(new Word("%", Tag.MODULE));
+        reserve(new Word("=", Tag.ASIGN));
+        reserve(new Word(",", Tag.COMMA));
+        reserve(new Word(";", Tag.SEMICOLON));
+        reserve(new Word(".", Tag.DOT));
+        reserve(new Word("(", Tag.O_PAR));
+        reserve(new Word(")", Tag.C_PAR));
+        reserve(new Word("{", Tag.O_BRACK));
+        reserve(new Word("}", Tag.C_BRACK));
+
         /*Lê o próximo caractere do arquivo*/
     }
 
     private void readch() throws IOException {
-        ch = (char) file.read();
+        //ch = (char) file.read();
     }
 
     /* Lê o próximo caractere do arquivo e verifica se é igual a c*/
@@ -91,7 +122,7 @@ public class Lexer {
                 value = 10 * value + Character.digit(ch, 10);
                 readch();
             } while (Character.isDigit(ch));
-            return new IntegerNumber(value);
+            return new LiteralInteger(value);
             //FALTA DO FLOAT
         }
 //Identificadores

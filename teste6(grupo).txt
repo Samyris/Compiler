@@ -1,0 +1,19 @@
+start
+    float a, b, c, delta, raiz1, raiz2;
+    print("Digite os coeficientes a, b e c da equação: ");
+    scan(a);
+    scan(b);
+    scan(c);
+    
+    delta = b * b - 4 * a * c;
+    
+    if (delta < 0) then
+        print("A equação não possui raízes reais.");
+    else
+        raiz1 = (-b + sqrt(delta)) / (2 * a);
+        raiz2 = (-b - sqrt(delta)) / (2 * a);
+        print("As raízes da equação são: ");
+        out(raiz1);
+        out(raiz2);
+    end;
+exit
