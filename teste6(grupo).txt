@@ -1,3 +1,9 @@
+// Comentario simples
+/*
+Comentario de linha multipla fechado
+*/
+
+
 start
     float a, b, c, delta, raiz1, raiz2;
     print("Digite os coeficientes a, b e c da equação: ");
