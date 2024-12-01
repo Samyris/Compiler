@@ -18,6 +18,6 @@ public class Token {
     @Override
     public String toString() {
         // Retorna o nome da tag usando o método estático Tag.getName
-        return "< " +  getAsciiValue(tag) + " , " +Tag.getName(tag) + " >";
+        return "< " +  getAsciiValue(tag) + " , " + Tag.getName(tag) + " >";
     }
 }

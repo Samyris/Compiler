@@ -29,7 +29,7 @@ public class Word extends Token {
     public static final Word mul = new Word("*", Tag.MUL);
     public static final Word div = new Word("/", Tag.DIV);
     public static final Word module = new Word("%", Tag.MODULE);
-    public static final Word asign = new Word("=", Tag.ASIGN);
+    public static final Word assign = new Word("=", Tag.ASSIGN);
     public static final Word comma = new Word(",", Tag.COMMA);
     public static final Word semicolon = new Word(";", Tag.SEMICOLON);
     public static final Word colon = new Word(";", Tag.COLON);

@@ -1,0 +1,20 @@
+start
+    int a, c_;
+    float d, _e;
+
+    a = 0;
+    d = 3.5;
+    c_ = d / 1.2;
+
+    scan(a);
+    scan(c_);
+    b = a * a;
+    c_ = b + a * (1 + a * c_);
+    print({Resultado: });
+    print(c_);
+    d = 34.2;
+    _e = val + 2.2; // `val` precisa ser declarado previamente na implementação
+    print({E: });
+    print(_e);
+    a = (b + c_ + a) / 2;
+exit

@@ -50,7 +50,7 @@ public class Tag {
         MUL = 283,
         DIV = 284,
         MODULE = 285, // %
-        ASIGN = 298; // =
+        ASSIGN = 298; // =
         
 
         //Pontuação

@@ -63,7 +63,7 @@ public class Lexer {
         reserve(new Word("*", Tag.MUL));
         reserve(new Word("/", Tag.DIV));
         reserve(new Word("%", Tag.MODULE));
-        reserve(new Word("=", Tag.ASIGN));
+        reserve(new Word("=", Tag.ASSIGN));
         reserve(new Word(",", Tag.COMMA));
         reserve(new Word(";", Tag.SEMICOLON));
         reserve(new Word(".", Tag.DOT));
@@ -95,27 +95,33 @@ public class Lexer {
             if (currentChar == ' ' || currentChar == '\t' || currentChar == '\r' || currentChar == '\b') {
                 continue;
             } else if (currentChar == '\n') {
-                line++; // conta as linhas
+                line++; // Conta as linhas
             } else {
                 break;
             }
         }
-
+    
         int line_aux = 0;
         while (currentChar == '/') {
             readch(); // Avança para o próximo caractere após '/'
             if (currentChar == '/') { // Comentário de uma linha
                 do {
-                    readch();
-                } while (currentChar != '\n' && currentChar != (char) -1);
+                    readch(); // Lê até o fim do comentário
+                    if (currentChar == '\n') {
+                        readch();
+                        line++;
+                        break;
+                    }
+                } while (currentChar != '\n' && currentChar != (char) -1); // Vai até a quebra de linha ou fim do arquivo
             } else if (currentChar == '*') { // Comentário de múltiplas linhas
                 int lineAux = line;
                 boolean closed = false;
-                while ((int) currentChar != 65535) {
+                do {
                     readch();
                     if (currentChar == '\n') {
                         line++;
-                    } else if (currentChar == '*') {
+                    }
+                    if (currentChar == '*') {
                         readch();
                         if (currentChar == '/') {
                             closed = true;
@@ -123,18 +129,20 @@ public class Lexer {
                             break;
                         }
                     }
-                }
+                } while ((int) currentChar != 65535);
+
+
                 if (!closed) {
-                    Token t = new Token('*');
+                    Token t = new Token('F');
                     errors.put(t, lineAux);
                     return t;
                 }
             } else {
                 return Word.div; // Operador de divisão
             }
-
+    
             if (currentChar == 65535) {
-                Token t = new Token('*');
+                Token t = new Token('F');
                 errors.put(t, line_aux);
                 return t;
             }
@@ -181,7 +189,7 @@ public class Lexer {
                 if (readch('=')) {
                     return Word.eq;
                 } else {
-                    return Word.asign;
+                    return Word.assign;
                 }
             case '<':
                 if (readch('=')) {
