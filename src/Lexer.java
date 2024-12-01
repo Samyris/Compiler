@@ -49,29 +49,7 @@ public class Lexer {
         reserve(new Word("int", Tag.TYPE_INT));
         reserve(new Word("float", Tag.TYPE_FLOAT));
         reserve(new Word("string", Tag.TYPE_STRING));
-        reserve(new Word("&&", Tag.AND));
-        reserve(new Word("||", Tag.OR));
-        reserve(new Word("==", Tag.EQ));
-        reserve(new Word("!", Tag.EXCLAMATION));
-        reserve(new Word(">", Tag.GT));
-        reserve(new Word(">=", Tag.GE));
-        reserve(new Word("<", Tag.LT));
-        reserve(new Word("<=", Tag.LE));
-        reserve(new Word("<>", Tag.DIF));
-        reserve(new Word("+", Tag.ADD));
-        reserve(new Word("-", Tag.SUB));
-        reserve(new Word("*", Tag.MUL));
-        reserve(new Word("/", Tag.DIV));
-        reserve(new Word("%", Tag.MODULE));
-        reserve(new Word("=", Tag.ASSIGN));
-        reserve(new Word(",", Tag.COMMA));
-        reserve(new Word(";", Tag.SEMICOLON));
-        reserve(new Word(".", Tag.DOT));
-        reserve(new Word("(", Tag.O_PAR));
-        reserve(new Word(")", Tag.C_PAR));
-        reserve(new Word("{", Tag.O_BRACK));
-        reserve(new Word("}", Tag.C_BRACK));
-        reserve(new Word("!", Tag.EXCLAMATION));
+        
         /*Lê o próximo caractere do arquivo*/
     }
 
@@ -158,9 +136,6 @@ public class Lexer {
             case ',':
                 readch();
                 return Word.comma;
-            case '.':
-                readch();
-                return Word.dot;
             case '(':
                 readch();
                 return Word.opar;
@@ -207,7 +182,7 @@ public class Lexer {
                 if (readch('=')) {
                     return Word.dif; //!=
                 } else {
-                    return Word.exclamation;
+                    return Word.not;
                 }
             case '+':
                 readch();

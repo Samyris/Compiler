@@ -32,7 +32,7 @@ public class Tag {
         public final static int
         AND = 272, // &&
         OR = 273, // ||
-        EXCLAMATION = 274; // !
+        NOT = 274; // !
 
         //Operadores de Comparação 
         public final static int
@@ -50,19 +50,17 @@ public class Tag {
         MUL = 283,
         DIV = 284,
         MODULE = 285, // %
-        ASSIGN = 298; // =
+        ASSIGN = 286; // =
         
 
         //Pontuação
         public final static int
-        COMMA = 289, // ,
-        SEMICOLON = 290 , // ;
-        COLON = 291, // :
-        DOT = 292, // .
-        O_PAR = 293, // (
-        C_PAR = 294, // )
-        O_BRACK = 295, // {
-        C_BRACK = 296; // }
+        COMMA = 287, // ,
+        SEMICOLON = 288 , // ;
+        COLON = 289, // :
+        O_PAR = 290, // (
+        C_PAR = 291; // )
+
 
         // Identificador
         public final static int
