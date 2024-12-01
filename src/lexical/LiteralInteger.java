@@ -9,7 +9,7 @@ public class LiteralInteger extends Token {
     }
 
     public String toString() {
-        return "<" + value + ", " + tag + ">";
+        return "< " + value + ", " + tag + " >";
     }
 
 }

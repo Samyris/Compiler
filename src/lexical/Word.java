@@ -18,12 +18,12 @@ public class Word extends Token {
     public static final Word type_int = new Word("int", Tag.TYPE_INT);
     public static final Word type_float = new Word("float", Tag.TYPE_FLOAT);
     public static final Word type_string = new Word("string", Tag.TYPE_STRING);
-    public static final Word not = new Word("!", Tag.NOT);
+    public static final Word exclamation = new Word("!", Tag.EXCLAMATION);
     public static final Word gt = new Word(">", Tag.GT);
     public static final Word ge = new Word(">=", Tag.GE);
     public static final Word lt = new Word("<", Tag.LT);
     public static final Word le = new Word("<=", Tag.LE);
-    public static final Word dif = new Word("<>", Tag.DIF);
+    public static final Word dif = new Word("!=", Tag.DIF);
     public static final Word add = new Word("+", Tag.ADD);
     public static final Word sub = new Word("-", Tag.SUB);
     public static final Word mul = new Word("*", Tag.MUL);

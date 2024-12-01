@@ -30,7 +30,7 @@ public class Tag {
         public final static int
         AND = 272, // &&
         OR = 273, // ||
-        NOT = 274; // !
+        EXCLAMATION = 274; // !
 
         //Operadores de Comparação 
         public final static int
@@ -69,5 +69,7 @@ public class Tag {
         //Outros tokens
         public final static int
         EOF = 65535;
+
+        public static final int INVALID_TOKEN = 0;
     }
 

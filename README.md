@@ -68,8 +68,7 @@ addop ::= "+" | "-" | "||"
 mulop ::= "*" | "/" | “%” | "&&"
 constant ::= integer_const | float_const | literal
 integer_const ::= digit+
-float_const ::= digit+
-“.”digit+
+float_const ::= digit+ “.”digit+
 literal ::= " { " caractere* " } "
 identifier ::= (letter | _ ) (letter | digit )*
 letter ::= [A-za-z]
