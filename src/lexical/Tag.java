@@ -1,5 +1,7 @@
 package lexical;
 
+import java.lang.reflect.Field;
+
 public class Tag {
         public final static int
         //Palavras reservadas
@@ -71,5 +73,18 @@ public class Tag {
         EOF = 65535;
 
         public static final int INVALID_TOKEN = 0;
+
+        public static String getName(int value) {
+            for (Field field : Tag.class.getFields()) {
+                try {
+                    if (field.getInt(null) == value) {
+                        return field.getName();
+                    }
+                } catch (IllegalAccessException e) {
+                    // Ignorar erros de acesso
+                }
+            }
+            return Tag.getName(INVALID_TOKEN);
+        }
     }
 

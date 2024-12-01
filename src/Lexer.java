@@ -159,12 +159,6 @@ public class Lexer {
             case ')':
                 readch();
                 return Word.cpar;
-            case '{':
-                readch();
-                return Word.obra;
-            case '}':
-                readch();
-                return Word.cbra;
 
             //Operadores
             case '&':

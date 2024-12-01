@@ -8,8 +8,9 @@ public class LiteralInteger extends Token {
         this.value = value;
     }
 
+    @Override
     public String toString() {
-        return "< " + value + ", " + tag + " >";
+        return "< " + value + " , " + Tag.getName(tag) + " >";
     }
 
 }

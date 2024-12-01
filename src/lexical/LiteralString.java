@@ -9,6 +9,6 @@ public class LiteralString extends Token{
     }
 
     public String toString() {
-        return "< " + value + ", " + tag + " >";
+        return "< " + value + " , " + Tag.getName(tag) + " >";
     }
 }

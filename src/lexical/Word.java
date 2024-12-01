@@ -49,6 +49,6 @@ public class Word extends Token {
     }
 
     public String toString() {
-        return "<" + lexeme + ", " + tag + ">";
+        return "< " + lexeme + " , " + Tag.getName(tag) + " >";
     }
 }
