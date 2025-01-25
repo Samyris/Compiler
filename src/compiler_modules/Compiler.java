@@ -1,8 +1,7 @@
 package compiler_modules;
 
-import java.util.Scanner;
-
 import compiler_modules.lexer.*;
+import java.util.Scanner;
 
 public class Compiler {
 
@@ -18,7 +17,7 @@ public class Compiler {
 
         // Processa o arquivo usando o Lexer
         try {
-            Lexer lexer = new Lexer("test_programs/" + fileName);
+            Lexer lexer = new Lexer("C:\\Users\\Samyris\\Documents\\CEFET\\Compiladores\\Compiler\\test_programs\\" + fileName);
             Token token;
 
             while ((token = lexer.scan()) != null) {

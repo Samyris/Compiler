@@ -1,6 +1,5 @@
 package shared.errors;
 
-import javax.lang.model.type.ErrorType;
 import shared.enums.ErrorType;
 
 public class CompilerError extends RuntimeException {

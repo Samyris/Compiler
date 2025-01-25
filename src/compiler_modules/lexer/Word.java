@@ -1,7 +1,5 @@
 package compiler_modules.lexer;
 
-import compiler_modules.Tag;
-
 public class Word extends Token {
     private String lexeme = "";
     private String tag = "";

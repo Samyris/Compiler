@@ -11,3 +11,4 @@ public class FloatToken extends Token {
     public String toString() {
         return "" + value;
     }
+}

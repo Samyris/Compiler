@@ -1,4 +1,4 @@
-package compiler_modules;
+package compiler_modules.lexer;
 
 public class Tag {
     public final static int /* RESERVED WORDS: */ START = 256, // start
