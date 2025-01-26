@@ -1,10 +1,10 @@
 package compiler_modules.parser;
 
-import java.util.List;
-import compiler_modules.lexer.Token;
 import compiler_modules.lexer.Tag;
-import shared.errors.CompilerError;
+import compiler_modules.lexer.Token;
+import java.util.List;
 import shared.enums.ErrorType;
+import shared.errors.CompilerError;
 
 public class Parser {
     private List<Token> tokens;
@@ -83,7 +83,7 @@ public class Parser {
     private void stmtList() {
         do {
             stmt();
-        } while (currentToken().tag != Tag.EXIT && currentToken().tag != Tag.END);
+        } while (currentToken().tag != Tag.EXIT && currentToken().tag != Tag.END && currentToken().tag != Tag.WHILE && currentToken().tag != Tag.ELSE);
     }
 
     private void stmt() {
@@ -223,15 +223,15 @@ public class Parser {
     }
 
     private void factor() {
-        if (match(Tag.ID) || match(Tag.INT_VALUE) || match(Tag.FLOAT_VALUE)) {
-            // Do nothing, just consume the token
-        } else if (match(Tag.OPEN_PAREN)) {
-            expression();
-            if (!match(Tag.CLOSE_PAREN)) {
-                throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ')' in factor");
-            }
-        } else {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Unexpected token in factor");
+    if (match(Tag.ID) || match(Tag.INT_VALUE) || match(Tag.FLOAT_VALUE) || match(Tag.STRING)) {
+        // Do nothing, just consume the token
+    } else if (match(Tag.OPEN_PAREN)) {
+        expression();
+        if (!match(Tag.CLOSE_PAREN)) {
+            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ')' in factor");
         }
+    } else {
+        throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Unexpected token in factor");
     }
+}
 }
