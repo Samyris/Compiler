@@ -1,8 +1,8 @@
 package compiler_modules.lexer;
 
 public class Word extends Token {
-    private String lexeme = "";
-    private String tag = "";
+    private final String lexeme;
+    private final String type;
 
     public static final Word eq = new Word("==", Tag.EQ);
     public static final Word gt = new Word(">", Tag.GT);
@@ -24,21 +24,26 @@ public class Word extends Token {
     public static final Word open_paren = new Word("(", Tag.OPEN_PAREN);
     public static final Word close_paren = new Word(")", Tag.CLOSE_PAREN);
 
-    public Word(String s, int tag) {
+    public Word(String lexeme, int tag, String type) {
         super(tag);
-        lexeme = s;
-        this.tag = "" + tag;
+        this.lexeme = lexeme;
+        this.type = type;
     }
 
-    public String toString() {
-        return "" + lexeme;
+    public Word(String lexeme, int tag) {
+        this(lexeme, tag, null);
     }
 
     public String getLexeme() {
         return lexeme;
     }
 
-    public String getTag() {
-        return tag;
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public String getStringRepresentation() {
+        return lexeme;
     }
 }

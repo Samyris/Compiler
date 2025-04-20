@@ -8,7 +8,7 @@ public class CompilerError extends RuntimeException {
     private final ErrorType errorType;
 
     public CompilerError(ErrorType errorType, int line, String details) {
-        super(String.format("%s Error on line %d. %s", errorType.name(), line, details));
+        super(String.format("%s Error near or at line %d. %s", errorType.name(), line, details));
         this.line = line;
         this.details = details;
         this.errorType = errorType;

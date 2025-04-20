@@ -8,7 +8,8 @@ public class FloatToken extends Token {
         this.value = value;
     }
 
-    public String toString() {
+    @Override
+    public String getStringRepresentation() {
         return "" + value;
     }
 }

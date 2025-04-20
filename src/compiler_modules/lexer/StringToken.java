@@ -8,7 +8,8 @@ public class StringToken extends Token {
         this.value = value;
     }
 
-    public String toString() {
+    @Override
+    public String getStringRepresentation() {
         return value;
     }
 }

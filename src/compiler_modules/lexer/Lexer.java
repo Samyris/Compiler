@@ -10,12 +10,15 @@ public class Lexer {
     public static int line = 1;
     private char ch = ' ';
     private FileReader file;
-    @SuppressWarnings("rawtypes")
-    private Hashtable words = new Hashtable();
+    public static Hashtable<String, Word> symbolTable = new Hashtable<>();
 
-    @SuppressWarnings("unchecked")
     private void reserve(Word w) {
-        words.put(w.toString(), w);
+        symbolTable.put(w.getStringRepresentation(), w);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Hashtable getSymbolTable() {
+        return symbolTable;
     }
 
     public Lexer(String fileName) throws FileNotFoundException {
@@ -25,19 +28,19 @@ public class Lexer {
             throw e;
         }
 
-        reserve(new Word("start", Tag.START));
-        reserve(new Word("exit", Tag.EXIT));
-        reserve(new Word("int", Tag.INT));
-        reserve(new Word("float", Tag.FLOAT));
-        reserve(new Word("string", Tag.STRING));
-        reserve(new Word("if", Tag.IF));
-        reserve(new Word("then", Tag.THEN));
-        reserve(new Word("else", Tag.ELSE));
-        reserve(new Word("do", Tag.DO));
-        reserve(new Word("while", Tag.WHILE));
-        reserve(new Word("end", Tag.END));
-        reserve(new Word("scan", Tag.SCAN));
-        reserve(new Word("print", Tag.PRINT));
+        reserve(new Word("start", Tag.START, "KEYWORD"));
+        reserve(new Word("exit", Tag.EXIT, "KEYWORD"));
+        reserve(new Word("int", Tag.INT, "KEYWORD"));
+        reserve(new Word("float", Tag.FLOAT, "KEYWORD"));
+        reserve(new Word("string", Tag.STRING, "KEYWORD"));
+        reserve(new Word("if", Tag.IF, "KEYWORD"));
+        reserve(new Word("then", Tag.THEN, "KEYWORD"));
+        reserve(new Word("else", Tag.ELSE, "KEYWORD"));
+        reserve(new Word("do", Tag.DO, "KEYWORD"));
+        reserve(new Word("while", Tag.WHILE, "KEYWORD"));
+        reserve(new Word("end", Tag.END, "KEYWORD"));
+        reserve(new Word("scan", Tag.SCAN, "KEYWORD"));
+        reserve(new Word("print", Tag.PRINT, "KEYWORD"));
     }
 
     private void readch() throws IOException {
@@ -52,7 +55,6 @@ public class Lexer {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     public Token scan() throws IOException {
         for (;; readch()) {
             if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\b')
@@ -226,14 +228,14 @@ public class Lexer {
             } while (Character.isLetterOrDigit(ch) || ch == '_');
 
             String s = sb.toString();
-            Word w = (Word) words.get(s);
+            Word w = (Word) symbolTable.get(s);
 
             if (w != null) {
                 return w;
             }
 
             w = new Word(s, Tag.ID);
-            words.put(s, w);
+            // symbolTable.put(s, w);
 
             return w;
         }

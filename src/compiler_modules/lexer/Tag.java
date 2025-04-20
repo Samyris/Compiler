@@ -45,4 +45,83 @@ public class Tag {
 
             /* IDENTIFIERS: */
             ID = 291;
+
+    public static String getTagName(int tag) {
+        switch (tag) {
+            case START:
+                return "START";
+            case EXIT:
+                return "EXIT";
+            case INT:
+                return "INT";
+            case FLOAT:
+                return "FLOAT";
+            case STRING:
+                return "STRING";
+            case IF:
+                return "IF";
+            case THEN:
+                return "THEN";
+            case ELSE:
+                return "ELSE";
+            case DO:
+                return "DO";
+            case WHILE:
+                return "WHILE";
+            case END:
+                return "END";
+            case SCAN:
+                return "SCAN";
+            case PRINT:
+                return "PRINT";
+            case EQ:
+                return "EQ '=='";
+            case GT:
+                return "GT '>'";
+            case GE:
+                return "GE '>='";
+            case LT:
+                return "LT '<'";
+            case LE:
+                return "LE '<='";
+            case NE:
+                return "NE '!='";
+            case ADD:
+                return "ADD '+'";
+            case SUB:
+                return "SUB '-'";
+            case OR:
+                return "OR '||'";
+            case MUL:
+                return "MUL '*'";
+            case DIV:
+                return "DIV '/'";
+            case MOD:
+                return "MOD '%'";
+            case AND:
+                return "AND '&&'";
+            case ASSIGN:
+                return "ASSIGN '='";
+            case COMMA:
+                return "COMMA ','";
+            case SEMICOLON:
+                return "SEMICOLON ';'";
+            case NOT:
+                return "NOT '!'";
+            case OPEN_PAREN:
+                return "OPEN_PAREN '('";
+            case CLOSE_PAREN:
+                return "CLOSE_PAREN ')'";
+            case INT_VALUE:
+                return "INT_VALUE (Integer constant)";
+            case FLOAT_VALUE:
+                return "FLOAT_VALUE (Floating-point constant)";
+            case STRING_VALUE:
+                return "STRING_VALUE (String constant)";
+            case ID:
+                return "ID (Identifier)";
+            default:
+                return "UNKNOWN";
+        }
+    }
 }

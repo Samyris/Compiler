@@ -7,7 +7,7 @@ public abstract class Token {
         tag = t;
     }
 
-    public abstract String toString();
+    public abstract String getStringRepresentation();
 
     public String getTagValueAsString() {
         return "" + tag;

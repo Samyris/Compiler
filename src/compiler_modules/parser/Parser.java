@@ -7,15 +7,25 @@ import shared.errors.CompilerError;
 public class Parser {
     private Lexer lexer;
     private Token token;
+    private String tokenType;
+    @SuppressWarnings("unused")
+    private String constantOperandType;
+    private String currentOperator;
+    private String leftOperandType;
+    private String rightOperandType;
+    private String nodeGeneratedFromRule;
     private boolean exitReached = false;
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
     }
 
-    private void throwInvalidTokenError() {
-        throw new CompilerError(ErrorType.SYNTACTIC, Lexer.line,
-                String.format("Error near or at token '%s'.", token.mapTagToString()));
+    private void throwSyntacticError(String message) {
+        throw new CompilerError(ErrorType.SYNTACTIC, Lexer.line, message);
+    }
+
+    private void throwSemanticError(String message) {
+        throw new CompilerError(ErrorType.SEMANTIC, Lexer.line, message);
     }
 
     public void parse() {
@@ -55,7 +65,8 @@ public class Parser {
         if (token.tag == tag) {
             advance();
         } else {
-            throwInvalidTokenError();
+            throwSyntacticError(
+                    String.format("Error at token %s. Expected %s.", Tag.getTagName(token.tag), Tag.getTagName(tag)));
         }
     }
 
@@ -70,7 +81,7 @@ public class Parser {
                 eat(Tag.EXIT);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format("Error at token %s. Expected START.", Tag.getTagName(token.tag)));
         }
     }
 
@@ -85,7 +96,9 @@ public class Parser {
                 }
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format("Error at token %s. Expected one of: INT, FLOAT, STRING.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -99,37 +112,48 @@ public class Parser {
                 eat(Tag.SEMICOLON);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format("Error at token %s. Expected one of: INT, FLOAT, STRING.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
     private void ident_list() {
         switch (token.tag) {
             case Tag.ID:
+                Lexer.symbolTable.put(token.getStringRepresentation(),
+                        new Word(token.getStringRepresentation(), Tag.ID, tokenType));
                 identifier();
                 while (token.tag == Tag.COMMA) {
                     eat(Tag.COMMA);
+                    Lexer.symbolTable.put(token.getStringRepresentation(),
+                            new Word(token.getStringRepresentation(), Tag.ID, tokenType));
                     identifier();
                 }
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format("Error at token %s. Expected ID (Identifier).", Tag.getTagName(token.tag)));
         }
     }
 
     private void type() {
         switch (token.tag) {
             case Tag.INT:
+                tokenType = "INT";
                 eat(Tag.INT);
                 break;
             case Tag.FLOAT:
+                tokenType = "FLOAT";
                 eat(Tag.FLOAT);
                 break;
             case Tag.STRING:
+                tokenType = "STRING";
                 eat(Tag.STRING);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format("Error at token %s. Expected one of: INT, FLOAT, STRING.",
+                        Tag.getTagName(token.tag)));
         }
     }
 
@@ -147,7 +171,9 @@ public class Parser {
                 }
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format("Error at token %s. Expected one of: ID (Identifier), IF, DO, SCAN, PRINT.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -155,6 +181,10 @@ public class Parser {
         switch (token.tag) {
             case Tag.ID:
                 assign_stmt();
+                if (leftOperandType != rightOperandType) {
+                    throwSemanticError(
+                            "Assignment is allowed only when the expression type matches the variable type.");
+                }
                 eat(Tag.SEMICOLON);
                 break;
             case Tag.IF:
@@ -172,19 +202,24 @@ public class Parser {
                 eat(Tag.SEMICOLON);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format("Error at token %s. Expected one of: ID (Identifier), IF, DO, SCAN, PRINT.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
     private void assign_stmt() {
         switch (token.tag) {
             case Tag.ID:
+                nodeGeneratedFromRule = "identifier";
                 identifier();
                 eat(Tag.ASSIGN);
+                nodeGeneratedFromRule = "simple_expr";
                 simple_expr();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format("Error at token %s. Expected ID (Identifier).", Tag.getTagName(token.tag)));
         }
     }
 
@@ -198,7 +233,8 @@ public class Parser {
                 if_stmt_prime();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format("Error at token %s. Expected IF.", Tag.getTagName(token.tag)));
+
         }
     }
 
@@ -212,16 +248,9 @@ public class Parser {
             case Tag.END:
                 eat(Tag.END);
                 break;
-            case Tag.ID:
-            case Tag.IF:
-            case Tag.DO:
-            case Tag.SCAN:
-            case Tag.PRINT:
-            case Tag.EXIT:
-            case Tag.WHILE:
-                break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format("Error at token %s. Expected one of: ELSE, END.", Tag.getTagName(token.tag)));
         }
     }
 
@@ -237,7 +266,10 @@ public class Parser {
                 expression();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of: ID (Identifier), INT_VALUE (Integer constant), FLOAT_VALUE (Floating-point constant), STRING_VALUE (String constant), OPEN_PAREN '(', NOT '!', SUB '-'.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -249,7 +281,7 @@ public class Parser {
                 stmt_sufix();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format("Error at token %s. Expected DO.", Tag.getTagName(token.tag)));
         }
     }
 
@@ -261,7 +293,8 @@ public class Parser {
                 eat(Tag.END);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format("Error at token %s. Expected WHILE.", Tag.getTagName(token.tag)));
+
         }
     }
 
@@ -274,7 +307,7 @@ public class Parser {
                 eat(Tag.CLOSE_PAREN);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format("Error at token %s. Expected SCAN.", Tag.getTagName(token.tag)));
         }
     }
 
@@ -287,7 +320,7 @@ public class Parser {
                 eat(Tag.CLOSE_PAREN);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format("Error at token %s. Expected PRINT.", Tag.getTagName(token.tag)));
         }
     }
 
@@ -303,7 +336,10 @@ public class Parser {
                 simple_expr();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of: ID (Identifier), INT_VALUE (Integer constant), FLOAT_VALUE (Floating-point constant), STRING_VALUE (String constant), OPEN_PAREN '(', NOT '!', SUB '-'.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -320,7 +356,10 @@ public class Parser {
                 expression_prime();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of: ID (Identifier), INT_VALUE (Integer constant), FLOAT_VALUE (Floating-point constant), STRING_VALUE (String constant), OPEN_PAREN '(', NOT '!', SUB '-'.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -340,7 +379,10 @@ public class Parser {
             case Tag.CLOSE_PAREN:
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of: EQ '==', GT '>', GE '>=', LT '<', LE '<=', NE '!=', THEN, END, CLOSE_PAREN ')'.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -357,7 +399,10 @@ public class Parser {
                 simple_expr_prime();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of: ID (Identifier), INT_VALUE (Integer constant), FLOAT_VALUE (Floating-point constant), STRING_VALUE (String constant), OPEN_PAREN '(', NOT '!', SUB '-'.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -366,8 +411,30 @@ public class Parser {
             case Tag.ADD:
             case Tag.SUB:
             case Tag.OR:
+                String leftType = rightOperandType;
                 addop();
                 term();
+                String rightType = rightOperandType;
+                switch (currentOperator) {
+                    case "ADD":
+                        if (leftType.equals("STRING") || rightType.equals("STRING")) {
+                            rightOperandType = "STRING";
+                        } else if (leftType.equals("FLOAT") || rightType.equals("FLOAT")) {
+                            rightOperandType = "FLOAT";
+                        } else {
+                            rightOperandType = "INT";
+                        }
+                        break;
+                    case "SUB":
+                        if (leftType.equals("STRING") || rightType.equals("STRING")) {
+                            throwSemanticError("SUB require numeric operands.");
+                        } else if (leftType.equals("FLOAT") || rightType.equals("FLOAT")) {
+                            rightOperandType = "FLOAT";
+                        } else {
+                            rightOperandType = "INT";
+                        }
+                        break;
+                }
                 simple_expr_prime();
                 break;
             case Tag.SEMICOLON:
@@ -382,7 +449,10 @@ public class Parser {
             case Tag.END:
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of:  ADD '+', SUB '-', OR '||', SEMICOLON ';', CLOSE_PAREN ')', EQ '==', GT '>', GE '>=', LT '<', LE '<=', NE '!=', THEN, END.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -394,12 +464,14 @@ public class Parser {
             case Tag.STRING_VALUE:
             case Tag.OPEN_PAREN:
             case Tag.NOT:
-            case Tag.SUB:
                 factor_a();
                 term_prime();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of: ID (Identifier), INT_VALUE (Integer constant), FLOAT_VALUE (Floating-point constant), STRING_VALUE (String constant), OPEN_PAREN '(', NOT '!'.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -409,8 +481,29 @@ public class Parser {
             case Tag.DIV:
             case Tag.MOD:
             case Tag.AND:
+                String leftType = rightOperandType;
                 mulop();
                 factor_a();
+                String rightType = rightOperandType;
+                switch (currentOperator) {
+                    case "DIV":
+                    case "MUL":
+                        if (leftType.equals("STRING") || rightType.equals("STRING")) {
+                            throwSemanticError("DIV and MUL require numeric operands.");
+                        } else if (leftType.equals("FLOAT") || rightType.equals("FLOAT")) {
+                            rightOperandType = "FLOAT";
+                        } else {
+                            rightOperandType = "INT";
+                        }
+                        break;
+                    case "MOD":
+                        if (leftType.equals("INT") && rightType.equals("INT")) {
+                            rightOperandType = "INT";
+                        } else {
+                            throwSemanticError("MOD requires integer operands.");
+                        }
+                        break;
+                }
                 term_prime();
                 break;
             case Tag.ADD:
@@ -428,7 +521,10 @@ public class Parser {
             case Tag.END:
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of:  MUL '*', DIV '/', MOD '%%', AND '&&', ADD '+', SUB '-', OR '||', SEMICOLON ';', CLOSE_PAREN ')', EQ '==', GT '>', GE '>=', LT '<', LE '<=', NE '!=', THEN, END.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -450,7 +546,10 @@ public class Parser {
                 factor();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of: ID (Identifier), INT_VALUE (Integer constant), FLOAT_VALUE (Floating-point constant), STRING_VALUE (String constant), OPEN_PAREN '(', NOT '!', SUB '-'.",
+                                Tag.getTagName(token.tag)));
         }
     }
 
@@ -470,7 +569,9 @@ public class Parser {
                 eat(Tag.CLOSE_PAREN);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format(
+                        "Error at token %s. Expected one of: ID (Identifier), INT_VALUE (Integer constant), FLOAT_VALUE (Floating-point constant), STRING_VALUE (String constant), OPEN_PAREN '('.",
+                        Tag.getTagName(token.tag)));
         }
     }
 
@@ -495,42 +596,54 @@ public class Parser {
                 eat(Tag.NE);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format(
+                        "Error at token %s. Expected one of: EQ '==', GT '>', GE '>=', LT '<', LE '<=', NE '!='.",
+                        Tag.getTagName(token.tag)));
         }
     }
 
     private void addop() {
         switch (token.tag) {
             case Tag.ADD:
+                currentOperator = "ADD";
                 eat(Tag.ADD);
                 break;
             case Tag.SUB:
+                currentOperator = "SUB";
                 eat(Tag.SUB);
                 break;
             case Tag.OR:
+                currentOperator = "OR";
                 eat(Tag.OR);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format(
+                        "Error at token %s. Expected one of: ADD '+', SUB '-', OR '||'.", Tag.getTagName(token.tag)));
         }
     }
 
     private void mulop() {
         switch (token.tag) {
             case Tag.MUL:
+                currentOperator = "MUL";
                 eat(Tag.MUL);
                 break;
             case Tag.DIV:
+                currentOperator = "DIV";
                 eat(Tag.DIV);
                 break;
             case Tag.MOD:
+                currentOperator = "MOD";
                 eat(Tag.MOD);
                 break;
             case Tag.AND:
+                currentOperator = "AND";
                 eat(Tag.AND);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format(
+                        "Error at token %s. Expected one of: MUL '*', DIV '/', MOD '%%', AND '&&'.",
+                        Tag.getTagName(token.tag)));
         }
     }
 
@@ -546,47 +659,78 @@ public class Parser {
                 literal();
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(
+                        String.format(
+                                "Error at token %s. Expected one of: INT_VALUE (Integer constant), FLOAT_VALUE (Floating-point constant), STRING_VALUE (String constant).",
+                                Tag.getTagName(token.tag)));
         }
     }
 
     private void integer_const() {
         switch (token.tag) {
             case Tag.INT_VALUE:
+                constantOperandType = "INT";
+                rightOperandType = "INT";
                 eat(Tag.INT_VALUE);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format(
+                        "Error at token %s. Expected INT_VALUE (Integer constant).", Tag.getTagName(token.tag)));
         }
     }
 
     private void float_const() {
         switch (token.tag) {
             case Tag.FLOAT_VALUE:
+                constantOperandType = "FLOAT";
+                rightOperandType = "FLOAT";
                 eat(Tag.FLOAT_VALUE);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format(
+                        "Error at token %s. Expected FLOAT_VALUE (Floating-point constant).",
+                        Tag.getTagName(token.tag)));
         }
     }
 
     private void literal() {
         switch (token.tag) {
             case Tag.STRING_VALUE:
+                constantOperandType = "STRING";
+                rightOperandType = "STRING";
                 eat(Tag.STRING_VALUE);
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format(
+                        "Error at token %s. Expected STRING_VALUE (String constant).", Tag.getTagName(token.tag)));
         }
     }
 
     private void identifier() {
         switch (token.tag) {
             case Tag.ID:
+                if (!Lexer.symbolTable.containsKey(token.getStringRepresentation())) {
+                    throwSemanticError(String.format("The variable '%s' must be declared before it can be used.",
+                            token.getStringRepresentation()));
+                }
+
+                Word wordEntry = Lexer.symbolTable.get(token.getStringRepresentation());
+
+                tokenType = wordEntry.getType();
+
                 eat(Tag.ID);
+
+                if (nodeGeneratedFromRule == "identifier") {
+                    leftOperandType = tokenType;
+                    break;
+                }
+
+                rightOperandType = tokenType;
+
                 break;
             default:
-                throwInvalidTokenError();
+                throwSyntacticError(String.format(
+                        "Error at token %s. Expected ID (Identifier).", Tag.getTagName(token.tag)));
         }
     }
 }
