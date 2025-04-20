@@ -1,18 +1,20 @@
 package compiler_modules.lexer;
 
-public class Token {
+public abstract class Token {
     public final int tag;
 
     public Token(int t) {
         tag = t;
     }
 
+    public abstract String toString();
+
     public String getTagValueAsString() {
         return "" + tag;
     }
 
     public String mapTagToString() {
-        switch (this.tag) {
+        switch (tag) {
             case Tag.START:
                 return "START";
             case Tag.EXIT:

@@ -1,237 +1,592 @@
 package compiler_modules.parser;
 
-import compiler_modules.lexer.Tag;
-import compiler_modules.lexer.Token;
-import java.util.List;
+import compiler_modules.lexer.*;
 import shared.enums.ErrorType;
 import shared.errors.CompilerError;
 
 public class Parser {
-    private List<Token> tokens;
-    private int currentTokenIndex;
+    private Lexer lexer;
+    private Token token;
+    private boolean exitReached = false;
 
-    public Parser(List<Token> tokens) {
-        this.tokens = tokens;
-        this.currentTokenIndex = 0;
+    public Parser(Lexer lexer) {
+        this.lexer = lexer;
     }
 
-    private Token currentToken() {
-        return tokens.get(currentTokenIndex);
-    }
-
-    private void advance() {
-        currentTokenIndex++;
-    }
-
-    private boolean match(int tag) {
-        if (currentToken().tag == tag) {
-            advance();
-            return true;
-        }
-        return false;
+    private void throwInvalidTokenError() {
+        throw new CompilerError(ErrorType.SYNTACTIC, Lexer.line,
+                String.format("Error near or at token '%s'.", token.mapTagToString()));
     }
 
     public void parse() {
+        advance();
         program();
     }
 
-    private void program() {
-        if (match(Tag.START)) {
-            if (currentToken().tag == Tag.INT || currentToken().tag == Tag.FLOAT || currentToken().tag == Tag.STRING) {
-                declList();
+    private void advance() {
+        try {
+            if (token != null && "EXIT".equals(token.mapTagToString())) {
+                token = lexer.scan();
+
+                if (token != null && exitReached) {
+                    throw new CompilerError(ErrorType.SYNTACTIC, Lexer.line,
+                            "No tokens should appear after EXIT.");
+                }
+                return;
             }
-            stmtList();
-            if (!match(Tag.EXIT)) {
-                throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected 'exit' at the end of the program");
+
+            token = lexer.scan();
+
+            if (token == null) {
+                throw new CompilerError(ErrorType.SYNTACTIC, Lexer.line,
+                        "Unexpected end of file.");
             }
-        } else {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected 'start' at the beginning of the program");
+
+            if ("EXIT".equals(token.mapTagToString())) {
+                exitReached = true;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
         }
     }
 
-    private void declList() {
-        do {
-            decl();
-        } while (currentToken().tag == Tag.INT || currentToken().tag == Tag.FLOAT || currentToken().tag == Tag.STRING);
+    private void eat(int tag) {
+        if (token.tag == tag) {
+            advance();
+        } else {
+            throwInvalidTokenError();
+        }
+    }
+
+    private void program() {
+        switch (token.tag) {
+            case Tag.START:
+                eat(Tag.START);
+                if (token.tag == Tag.INT || token.tag == Tag.FLOAT || token.tag == Tag.STRING) {
+                    decl_list();
+                }
+                stmt_list();
+                eat(Tag.EXIT);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void decl_list() {
+        switch (token.tag) {
+            case Tag.INT:
+            case Tag.FLOAT:
+            case Tag.STRING:
+                decl();
+                while (token.tag == Tag.INT || token.tag == Tag.FLOAT || token.tag == Tag.STRING) {
+                    decl();
+                }
+                break;
+            default:
+                throwInvalidTokenError();
+        }
     }
 
     private void decl() {
-        type();
-        identList();
-        if (!match(Tag.SEMICOLON)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ';' after declaration");
+        switch (token.tag) {
+            case Tag.INT:
+            case Tag.FLOAT:
+            case Tag.STRING:
+                type();
+                ident_list();
+                eat(Tag.SEMICOLON);
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
-    private void identList() {
-        if (!match(Tag.ID)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected identifier in declaration");
-        }
-        while (match(Tag.COMMA)) {
-            if (!match(Tag.ID)) {
-                throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected identifier after ',' in declaration");
-            }
+    private void ident_list() {
+        switch (token.tag) {
+            case Tag.ID:
+                identifier();
+                while (token.tag == Tag.COMMA) {
+                    eat(Tag.COMMA);
+                    identifier();
+                }
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
     private void type() {
-        if (!(match(Tag.INT) || match(Tag.FLOAT) || match(Tag.STRING))) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected type (int, float, string) in declaration");
+        switch (token.tag) {
+            case Tag.INT:
+                eat(Tag.INT);
+                break;
+            case Tag.FLOAT:
+                eat(Tag.FLOAT);
+                break;
+            case Tag.STRING:
+                eat(Tag.STRING);
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
-    private void stmtList() {
-        do {
-            stmt();
-        } while (currentToken().tag != Tag.EXIT && currentToken().tag != Tag.END && currentToken().tag != Tag.WHILE && currentToken().tag != Tag.ELSE);
+    private void stmt_list() {
+        switch (token.tag) {
+            case Tag.ID:
+            case Tag.IF:
+            case Tag.DO:
+            case Tag.SCAN:
+            case Tag.PRINT:
+                stmt();
+                while (token.tag == Tag.ID || token.tag == Tag.IF || token.tag == Tag.DO || token.tag == Tag.SCAN
+                        || token.tag == Tag.PRINT) {
+                    stmt();
+                }
+                break;
+            default:
+                throwInvalidTokenError();
+        }
     }
 
     private void stmt() {
-        if (currentToken().tag == Tag.ID) {
-            assignStmt();
-            if (!match(Tag.SEMICOLON)) {
-                throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ';' after assignment statement");
-            }
-        } else if (match(Tag.IF)) {
-            ifStmt();
-        } else if (match(Tag.DO)) {
-            whileStmt();
-        } else if (match(Tag.SCAN)) {
-            readStmt();
-            if (!match(Tag.SEMICOLON)) {
-                throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ';' after read statement");
-            }
-        } else if (match(Tag.PRINT)) {
-            writeStmt();
-            if (!match(Tag.SEMICOLON)) {
-                throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ';' after write statement");
-            }
-        } else {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Unexpected statement");
+        switch (token.tag) {
+            case Tag.ID:
+                assign_stmt();
+                eat(Tag.SEMICOLON);
+                break;
+            case Tag.IF:
+                if_stmt();
+                break;
+            case Tag.DO:
+                while_stmt();
+                break;
+            case Tag.SCAN:
+                read_stmt();
+                eat(Tag.SEMICOLON);
+                break;
+            case Tag.PRINT:
+                write_stmt();
+                eat(Tag.SEMICOLON);
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
-    private void assignStmt() {
-        if (!match(Tag.ID)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected identifier in assignment statement");
-        }
-        if (!match(Tag.ASSIGN)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected '=' in assignment statement");
-        }
-        simpleExpr();
-    }
-
-    private void ifStmt() {
-        condition();
-        if (!match(Tag.THEN)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected 'then' in if statement");
-        }
-        stmtList();
-        if (match(Tag.ELSE)) {
-            stmtList();
-        }
-        if (!match(Tag.END)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected 'end' in if statement");
+    private void assign_stmt() {
+        switch (token.tag) {
+            case Tag.ID:
+                identifier();
+                eat(Tag.ASSIGN);
+                simple_expr();
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
-    private void whileStmt() {
-        stmtList();
-        stmtSufix();
-    }
-
-    private void stmtSufix() {
-        if (!match(Tag.WHILE)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected 'while' in while statement suffix");
-        }
-        condition();
-        if (!match(Tag.END)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected 'end' in while statement suffix");
-        }
-    }
-
-    private void readStmt() {
-        if (!match(Tag.SCAN)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected 'scan' in read statement");
-        }
-        if (!match(Tag.OPEN_PAREN)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected '(' in read statement");
-        }
-        if (!match(Tag.ID)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected identifier in read statement");
-        }
-        if (!match(Tag.CLOSE_PAREN)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ')' in read statement");
+    private void if_stmt() {
+        switch (token.tag) {
+            case Tag.IF:
+                eat(Tag.IF);
+                condition();
+                eat(Tag.THEN);
+                stmt_list();
+                if_stmt_prime();
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
-    private void writeStmt() {
-        if (!match(Tag.PRINT)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected 'print' in write statement");
-        }
-        if (!match(Tag.OPEN_PAREN)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected '(' in write statement");
-        }
-        writable();
-        if (!match(Tag.CLOSE_PAREN)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ')' in write statement");
-        }
-    }
-
-    private void writable() {
-        if (currentToken().tag == Tag.STRING_VALUE) {
-            match(Tag.STRING_VALUE);
-        } else {
-            simpleExpr();
+    private void if_stmt_prime() {
+        switch (token.tag) {
+            case Tag.ELSE:
+                eat(Tag.ELSE);
+                stmt_list();
+                eat(Tag.END);
+                break;
+            case Tag.END:
+                eat(Tag.END);
+                break;
+            case Tag.ID:
+            case Tag.IF:
+            case Tag.DO:
+            case Tag.SCAN:
+            case Tag.PRINT:
+            case Tag.EXIT:
+            case Tag.WHILE:
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
     private void condition() {
-        expression();
-    }
-
-    private void expression() {
-        simpleExpr();
-        if (currentToken().tag == Tag.EQ || currentToken().tag == Tag.GT || currentToken().tag == Tag.GE || currentToken().tag == Tag.LT || currentToken().tag == Tag.LE || currentToken().tag == Tag.NE) {
-            match(currentToken().tag);
-            simpleExpr();
+        switch (token.tag) {
+            case Tag.ID:
+            case Tag.INT_VALUE:
+            case Tag.FLOAT_VALUE:
+            case Tag.STRING_VALUE:
+            case Tag.OPEN_PAREN:
+            case Tag.NOT:
+            case Tag.SUB:
+                expression();
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
-    private void simpleExpr() {
-        term();
-        while (currentToken().tag == Tag.ADD || currentToken().tag == Tag.SUB || currentToken().tag == Tag.OR) {
-            match(currentToken().tag);
-            term();
+    private void while_stmt() {
+        switch (token.tag) {
+            case Tag.DO:
+                eat(Tag.DO);
+                stmt_list();
+                stmt_sufix();
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void stmt_sufix() {
+        switch (token.tag) {
+            case Tag.WHILE:
+                eat(Tag.WHILE);
+                condition();
+                eat(Tag.END);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void read_stmt() {
+        switch (token.tag) {
+            case Tag.SCAN:
+                eat(Tag.SCAN);
+                eat(Tag.OPEN_PAREN);
+                identifier();
+                eat(Tag.CLOSE_PAREN);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void write_stmt() {
+        switch (token.tag) {
+            case Tag.PRINT:
+                eat(Tag.PRINT);
+                eat(Tag.OPEN_PAREN);
+                writable();
+                eat(Tag.CLOSE_PAREN);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void writable() {
+        switch (token.tag) {
+            case Tag.ID:
+            case Tag.INT_VALUE:
+            case Tag.FLOAT_VALUE:
+            case Tag.STRING_VALUE:
+            case Tag.OPEN_PAREN:
+            case Tag.NOT:
+            case Tag.SUB:
+                simple_expr();
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void expression() {
+        switch (token.tag) {
+            case Tag.ID:
+            case Tag.INT_VALUE:
+            case Tag.FLOAT_VALUE:
+            case Tag.STRING_VALUE:
+            case Tag.OPEN_PAREN:
+            case Tag.NOT:
+            case Tag.SUB:
+                simple_expr();
+                expression_prime();
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void expression_prime() {
+        switch (token.tag) {
+            case Tag.EQ:
+            case Tag.GT:
+            case Tag.GE:
+            case Tag.LT:
+            case Tag.LE:
+            case Tag.NE:
+                relop();
+                simple_expr();
+                break;
+            case Tag.THEN:
+            case Tag.END:
+            case Tag.CLOSE_PAREN:
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void simple_expr() {
+        switch (token.tag) {
+            case Tag.ID:
+            case Tag.INT_VALUE:
+            case Tag.FLOAT_VALUE:
+            case Tag.STRING_VALUE:
+            case Tag.OPEN_PAREN:
+            case Tag.NOT:
+            case Tag.SUB:
+                term();
+                simple_expr_prime();
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void simple_expr_prime() {
+        switch (token.tag) {
+            case Tag.ADD:
+            case Tag.SUB:
+            case Tag.OR:
+                addop();
+                term();
+                simple_expr_prime();
+                break;
+            case Tag.SEMICOLON:
+            case Tag.CLOSE_PAREN:
+            case Tag.EQ:
+            case Tag.GT:
+            case Tag.GE:
+            case Tag.LT:
+            case Tag.LE:
+            case Tag.NE:
+            case Tag.THEN:
+            case Tag.END:
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
     private void term() {
-        factorA();
-        while (currentToken().tag == Tag.MUL || currentToken().tag == Tag.DIV || currentToken().tag == Tag.MOD || currentToken().tag == Tag.AND) {
-            match(currentToken().tag);
-            factorA();
+        switch (token.tag) {
+            case Tag.ID:
+            case Tag.INT_VALUE:
+            case Tag.FLOAT_VALUE:
+            case Tag.STRING_VALUE:
+            case Tag.OPEN_PAREN:
+            case Tag.NOT:
+            case Tag.SUB:
+                factor_a();
+                term_prime();
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
-    private void factorA() {
-        if (match(Tag.NOT) || match(Tag.SUB)) {
-            factor();
-        } else {
-            factor();
+    private void term_prime() {
+        switch (token.tag) {
+            case Tag.MUL:
+            case Tag.DIV:
+            case Tag.MOD:
+            case Tag.AND:
+                mulop();
+                factor_a();
+                term_prime();
+                break;
+            case Tag.ADD:
+            case Tag.SUB:
+            case Tag.OR:
+            case Tag.SEMICOLON:
+            case Tag.CLOSE_PAREN:
+            case Tag.EQ:
+            case Tag.GT:
+            case Tag.GE:
+            case Tag.LT:
+            case Tag.LE:
+            case Tag.NE:
+            case Tag.THEN:
+            case Tag.END:
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void factor_a() {
+        switch (token.tag) {
+            case Tag.ID:
+            case Tag.INT_VALUE:
+            case Tag.FLOAT_VALUE:
+            case Tag.STRING_VALUE:
+            case Tag.OPEN_PAREN:
+                factor();
+                break;
+            case Tag.NOT:
+                eat(Tag.NOT);
+                factor();
+                break;
+            case Tag.SUB:
+                eat(Tag.SUB);
+                factor();
+                break;
+            default:
+                throwInvalidTokenError();
         }
     }
 
     private void factor() {
-    if (match(Tag.ID) || match(Tag.INT_VALUE) || match(Tag.FLOAT_VALUE) || match(Tag.STRING)) {
-        // Do nothing, just consume the token
-    } else if (match(Tag.OPEN_PAREN)) {
-        expression();
-        if (!match(Tag.CLOSE_PAREN)) {
-            throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Expected ')' in factor");
+        switch (token.tag) {
+            case Tag.ID:
+                identifier();
+                break;
+            case Tag.INT_VALUE:
+            case Tag.FLOAT_VALUE:
+            case Tag.STRING_VALUE:
+                constant();
+                break;
+            case Tag.OPEN_PAREN:
+                eat(Tag.OPEN_PAREN);
+                expression();
+                eat(Tag.CLOSE_PAREN);
+                break;
+            default:
+                throwInvalidTokenError();
         }
-    } else {
-        throw new CompilerError(ErrorType.SYNTAX, currentToken().tag, "Unexpected token in factor");
     }
-}
+
+    private void relop() {
+        switch (token.tag) {
+            case Tag.EQ:
+                eat(Tag.EQ);
+                break;
+            case Tag.GT:
+                eat(Tag.GT);
+                break;
+            case Tag.GE:
+                eat(Tag.GE);
+                break;
+            case Tag.LT:
+                eat(Tag.LT);
+                break;
+            case Tag.LE:
+                eat(Tag.LE);
+                break;
+            case Tag.NE:
+                eat(Tag.NE);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void addop() {
+        switch (token.tag) {
+            case Tag.ADD:
+                eat(Tag.ADD);
+                break;
+            case Tag.SUB:
+                eat(Tag.SUB);
+                break;
+            case Tag.OR:
+                eat(Tag.OR);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void mulop() {
+        switch (token.tag) {
+            case Tag.MUL:
+                eat(Tag.MUL);
+                break;
+            case Tag.DIV:
+                eat(Tag.DIV);
+                break;
+            case Tag.MOD:
+                eat(Tag.MOD);
+                break;
+            case Tag.AND:
+                eat(Tag.AND);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void constant() {
+        switch (token.tag) {
+            case Tag.INT_VALUE:
+                integer_const();
+                break;
+            case Tag.FLOAT_VALUE:
+                float_const();
+                break;
+            case Tag.STRING_VALUE:
+                literal();
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void integer_const() {
+        switch (token.tag) {
+            case Tag.INT_VALUE:
+                eat(Tag.INT_VALUE);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void float_const() {
+        switch (token.tag) {
+            case Tag.FLOAT_VALUE:
+                eat(Tag.FLOAT_VALUE);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void literal() {
+        switch (token.tag) {
+            case Tag.STRING_VALUE:
+                eat(Tag.STRING_VALUE);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
+
+    private void identifier() {
+        switch (token.tag) {
+            case Tag.ID:
+                eat(Tag.ID);
+                break;
+            default:
+                throwInvalidTokenError();
+        }
+    }
 }
